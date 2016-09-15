@@ -14,8 +14,8 @@ namespace ClusterProcessorClassLibrary
                 get { return storage_name; }
                 set { storage_name = value; }
             }
-            private long requireed_records_number_for_clusterization = 40000;
-            public long RequireedRecordsNumberForClusterization
+            private List<long> requireed_records_number_for_clusterization = new List<long>();
+            public List<long> RequireedRecordsNumberForClusterization
             {
                 get { return requireed_records_number_for_clusterization; }
                 set { requireed_records_number_for_clusterization = value; }
