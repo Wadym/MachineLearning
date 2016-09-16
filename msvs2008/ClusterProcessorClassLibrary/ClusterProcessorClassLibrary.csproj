@@ -46,7 +46,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HistoryProcessor.cs" />
-    <Compile Include="ClusterModels.cs" />
     <Compile Include="ClusterProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

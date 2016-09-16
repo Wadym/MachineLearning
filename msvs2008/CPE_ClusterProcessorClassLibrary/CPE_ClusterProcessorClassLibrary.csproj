@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CPE_ClusterProcessor.cs" />
+    <Compile Include="CPE_ClusterProcessorNodeCfg.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
