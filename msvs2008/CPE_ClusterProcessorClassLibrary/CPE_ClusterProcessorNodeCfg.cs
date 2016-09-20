@@ -2,86 +2,81 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ClusterProcessorClassLibrary;
 
-namespace ClusterProcessorClassLibrary
+namespace CPE_ClusterProcessorClassLibrary
 {
+    [Serializable]
     public class CPE_ClusterProcessorNodeCfg
     {
-        public virtual CPE_ClusterProcessorNodeCfg()
+        public CPE_ClusterProcessorNodeCfg()
         { 
         }
-        #region CPE_ClusterProcessorNodeCfg
-        private List<int> number_of_clusters = new List<int>();
-        public List<int> NumberOfClusters
+        private List<ClusterProcessorCfg> cp_cfg=new List<ClusterProcessorCfg>();
+        public List<ClusterProcessorCfg> CPCfg
         {
-            get { return number_of_clusters; }
-            set { number_of_clusters = value; }
+            get { return cp_cfg; }
+            set { cp_cfg = value; }
         }
-        private List<string> funcid = new List<string>();
-        public List<string> FuncID
+        private List<int> inputs_array_index=new List<int>();
+        public List<int> InputsArrayIndex
         {
-            get { return funcid; }
-            set { funcid = value; }
+            get { return inputs_array_index; }
+            set { inputs_array_index = value; }
         }
-        private List<double> alpha = new List<double>();
-        public List<double> Alpha
+        private List<int> outputs_array_index;
+        public List<int> OutputsArrayIndex
         {
-            get { return alpha; }
-            set { alpha = value; }
+            get { return outputs_array_index; }
+            set { outputs_array_index = value; }
         }
-        private List<double> beta = new List<double>();
-        public List<double> Beta
+        private int node_decimation = 1;
+        public int NodeDecimation
         {
-            get { return beta; }
-            set { beta = value; }
+            get { return node_decimation; }
+            set { node_decimation = value; }
         }
-        private List<int> number_of_inputs = new List<int>();
-        public List<int> NumberOfInputs
+        private double clusterization_update_interval = 1 * 60 * 60 * 1000;
+        public double ClusterizationUpdateInterval
         {
-            get { return number_of_inputs; }
-            set { number_of_inputs = value; }
+            get { return clusterization_update_interval; }
+            set { clusterization_update_interval = value; }
         }
-        private List<List<int>> indices_of_inputs = new List<List<int>>();
-        public List<List<int>> IndicesOfInputs
+        public ClusterCenter cluster_center = new ClusterCenter();
+        private ClusterCenter ClusterCenter
         {
-            get { return indices_of_inputs; }
-            set { indices_of_inputs = value; }
+            get { return cluster_center; }
+            set { cluster_center = value; }
         }
-        private List<int> index_of_output = new List<int>();
-        public List<int> IndexOfOutput
-        {
-            get { return index_of_output; }
-            set { index_of_output = value; }
-        }
-        private List<string> cluster_centers_storage_name = new List<string>();
-        public List<string> ClusterCentersStorageName
-        {
-            get { return cluster_centers_storage_name; }
-            set { cluster_centers_storage_name = value; }
-        }
-        private List<int> iteration_max = new List<int>();
-        public List<int> IterationMax
-        {
-            get { return iteration_max; }
-            set { iteration_max = value; }
-        }
-        private List<double> delta_err_max = new List<double>();
-        public List<double> DeltaErrMax
-        {
-            get { return delta_err_max; }
-            set { delta_err_max = value; }
-        }
-        #endregion CPE_ClusterProcessorNodeCfg
+        //private bool do_clusterization_on_start = true;
+        //public bool DoClusterizationOnStart
+        //{
+        //    get { return do_clusterization_on_start; }
+        //    set { do_clusterization_on_start = value; }
+        //}
     }
     public class CPE_ClusterProcessorNode
     {
         CPE_ClusterProcessorNodeCfg cfg = new CPE_ClusterProcessorNodeCfg();
-        public virtual CPE_ClusterProcessorNode()
+        public CPE_ClusterProcessorNode()
         {
         }
-        public virtual CPE_ClusterProcessorNode(CPE_ClusterProcessorNodeCfg cfg)
+        public CPE_ClusterProcessorNode(CPE_ClusterProcessorNodeCfg cfg)
         {
             this.cfg = cfg;
         }
+        private ClusterProcessor cluster_processor = new ClusterProcessor();
+        public ClusterProcessor Cluster_Processor
+        {
+            get { return cluster_processor; }
+            set { cluster_processor = value; }
+        }
+        private HistoryProcessor history_processor = new HistoryProcessor();
+        public HistoryProcessor Hystory_Processor
+        {
+            get { return history_processor; }
+            set { history_processor = value; }
+        }
+
     }
 }

@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPE_ClusterProcessorClassLi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPE_Lib", "..\CPE_Lib\CPE_Lib.csproj", "{68C8CDE5-A9B9-4074-BCF3-A019420AF1ED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreateXMLfromClass", "..\CreateXMLfromClass\CreateXMLfromClass.csproj", "{344ABDA0-52B8-4A14-BC80-0D1317EA9236}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +87,18 @@ Global
 		{68C8CDE5-A9B9-4074-BCF3-A019420AF1ED}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{68C8CDE5-A9B9-4074-BCF3-A019420AF1ED}.Release|Win32.ActiveCfg = Release|Any CPU
 		{68C8CDE5-A9B9-4074-BCF3-A019420AF1ED}.Release|x64.ActiveCfg = Release|Any CPU
+		{344ABDA0-52B8-4A14-BC80-0D1317EA9236}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{344ABDA0-52B8-4A14-BC80-0D1317EA9236}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{344ABDA0-52B8-4A14-BC80-0D1317EA9236}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{344ABDA0-52B8-4A14-BC80-0D1317EA9236}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{344ABDA0-52B8-4A14-BC80-0D1317EA9236}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{344ABDA0-52B8-4A14-BC80-0D1317EA9236}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{344ABDA0-52B8-4A14-BC80-0D1317EA9236}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{344ABDA0-52B8-4A14-BC80-0D1317EA9236}.Release|Any CPU.Build.0 = Release|Any CPU
+		{344ABDA0-52B8-4A14-BC80-0D1317EA9236}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{344ABDA0-52B8-4A14-BC80-0D1317EA9236}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{344ABDA0-52B8-4A14-BC80-0D1317EA9236}.Release|Win32.ActiveCfg = Release|Any CPU
+		{344ABDA0-52B8-4A14-BC80-0D1317EA9236}.Release|x64.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
