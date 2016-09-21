@@ -46,32 +46,4 @@ namespace CreateXMLfromClass
             this.SerializeData(cfg);
         }
     }
-    //public class CPE_ClusterProcessorCfg
-    //{
-    //    private List<CPE_ClusterProcessorNodeCfg> nodes = new List<CPE_ClusterProcesorNodeCfg>();
-
-    //    public List<CPE_ClusterProcessorNodeCfg> Nodes
-    //    {
-    //        get { return nodes; }
-    //        set { nodes = value; }
-    //    }
-
-    //}
-
-    //public class CPE_ClusterProcessorNodeCfg
-    //{
-    //    private ClusterProcessorCfg cp_cfg = new ClusterProcessorCfg();
-
-    //    public ClusterProcessorCfg CP_Cfg
-    //    {
-    //        get { return cp_cfg; }
-    //        set { cp_cfg = value; }
-    //    }
-
-
-    //}
-    //public class ClusterProcesorCfg
-    //{
-    //
-    //}
 }
