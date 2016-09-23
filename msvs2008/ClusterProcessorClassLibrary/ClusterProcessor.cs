@@ -40,7 +40,7 @@ namespace ClusterProcessorClassLibrary
         }
         private long max_records_number_for_clusterizationmyVar;
 
-        public long MaxRecordsNnumberForClusterization
+        public long MaxRecordsNumberForClusterization
         {
             get { return max_records_number_for_clusterizationmyVar; }
             set { max_records_number_for_clusterizationmyVar = value; }
@@ -92,7 +92,7 @@ namespace ClusterProcessorClassLibrary
             get { return number_of_clusters; }
             set { number_of_clusters = value; }
         }
-        private string cluster_centers_storage_name = "ClusterCenters.xml";
+        private string cluster_centers_storage_name = "ClusterCenters_FuncID.xml";
         public string ClusterCentersStorageName
         {
             get { return cluster_centers_storage_name; }
