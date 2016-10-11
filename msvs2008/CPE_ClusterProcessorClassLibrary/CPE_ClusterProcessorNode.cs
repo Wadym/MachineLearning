@@ -65,8 +65,8 @@ namespace CPE_ClusterProcessorClassLibrary
         {
             this.cfg = cfg;
         }
-        private ClusterProcessor cluster_processor = new ClusterProcessor();
-        public ClusterProcessor Cluster_Processor
+        private CProcessor<CHistoryInput, CRTInput> cluster_processor = new CProcessor<CHistoryInput, CRTInput>();
+        public CProcessor<CHistoryInput, CRTInput> Cluster_Processor
         {
             get { return cluster_processor; }
             set { cluster_processor = value; }

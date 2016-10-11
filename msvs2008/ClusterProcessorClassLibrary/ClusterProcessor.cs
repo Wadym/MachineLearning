@@ -32,14 +32,282 @@ namespace ClusterProcessorClassLibrary
     {
         public ClusterProcessorCfg(){ }
     }
-    public class ClusterProcessor
+    public class CClusterRT<TRT> where TRT : CRTInput, new()
     {
-        ClusterProcessorCfg cfg = new ClusterProcessorCfg();
-        public ClusterProcessor() { }
-        public ClusterProcessor(ClusterProcessorCfg cfg)
+        public CClusterRT() { }
+        #region rtdata
+        private List<double> input;
+        public List<double> Input
         {
-            this.cfg = cfg;
+            get { return input; }
+            set { input = value; }
         }
+        private List<double> output;
+        public List<double> Output
+        {
+            get { return output; }
+            set { output = value; }
+        }
+        private List<double> tm;
+        public List<double> Tm
+        {
+            get { return tm; }
+            set { tm = value; }
+        }
+        #endregion rtdata
+        #region interface
+        public virtual void Config(ClusterProcessorCfg cfg)
+        {
+            //input = new List<double>();
+            //output = new List<double>();
+            //tm = new List<double>();
+        }
+        public virtual void Init()
+        {
+        }
+        public virtual void Activate()
+        {
+        }
+        public virtual void GetRTData(ref TRT procData)
+        {
+            procData.Input = this.Input;
+            procData.Output = this.Output;
+            procData.Tm = this.Tm;
+            return;
+        }
+        public virtual void Exe()
+        {
+            return;
+        }
+        #endregion interface
+    }
+    public class CRTInput
+    {
+        public CRTInput() { }
+        public virtual void Config() { return; }
+        #region rtdata
+        private List<double> input;
+        public List<double> Input
+        {
+            get { return input; }
+            set { input = value; }
+        }
+        private List<double> output;
+        public List<double> Output
+        {
+            get { return output; }
+            set { output = value; }
+        }
+        private List<double> tm;
+        public List<double> Tm
+        {
+            get { return tm; }
+            set { tm = value; }
+        }
+        #endregion rtdata
+    }
+    [Serializable]
+    public class CHistoryInput
+    {
+        public CHistoryInput() { }
+        public void Config() { return; }
+        #region clusterizationdata
+        private List<List<double>> x = new List<List<double>>();
+        public List<List<double>> X
+        {
+            get { return x; }
+            set { x = value; }
+        }
+        private List<List<double>> y = new List<List<double>>();
+        public List<List<double>> Y
+        {
+            get { return y; }
+            set { y = value; }
+        }
+        private List<double> t = new List<double>();
+        public List<double> T
+        {
+            get { return t; }
+            set { t = value; }
+        }
+        private ClusterCenter cc = new ClusterCenter();
+        public ClusterCenter CC
+        {
+            get { return cc; }
+            set { cc = value; }
+        }
+        #endregion clusterizationdata
+    }
+    public class CHistoryProcessor<T, TRT>
+        where T : CHistoryInput, new()
+        where TRT : CRTInput, new()
+    {
+        public CHistoryProcessor() { }
+        #region cfg
+        ClusterProcessorCfg cfg;
+        #endregion cfg
+        #region clusterizationdata
+        T hd;
+        private List<double> z;
+        public List<double> Z
+        {
+            get { return z; }
+            set { z = value; }
+        }
+        #endregion clusterizationdata
+        #region interface
+        public virtual void Config(ClusterProcessorCfg cfg)
+        {
+            //histData = new T();
+            this.cfg = cfg;
+            hd = new T();
+        }
+        public virtual void Init()
+        {
+        }
+        public virtual void Activate()
+        {
+        }
+        public virtual void Exe()
+        {
+            List<double> entry = new List<double>();
+            entry.Add(11);
+            hd.X.Add(entry);
+            hd.Y.Add(entry);
+            hd.T.Add(11);
+            entry.Add(111);
+            hd.X.Add(entry);
+            hd.Y.Add(entry);
+            hd.T.Add(111);
+        }
+        #endregion interface
+        public virtual void GetHistoryData(ref T histData)
+        {
+            histData.X = hd.X;
+            histData.Y = hd.Y;
+            histData.T = hd.T;
+            return;
+        }
+    }
+    public class CProcessorBase<T> where T : CHistoryInput, new()
+    {
+        public CProcessorBase() { }
+        #region cfg
+        ClusterProcessorCfg cfg;
+        #endregion cfg
+        #region rtdata
+        private List<double> input;
+        public List<double> Input
+        {
+            get { return input; }
+            set { input = value; }
+        }
+        private List<double> output;
+        public List<double> Output
+        {
+            get { return output; }
+            set { output = value; }
+        }
+        private List<double> tm;
+        public List<double> Tm
+        {
+            get { return tm; }
+            set { tm = value; }
+        }
+        #endregion rtdata
+        #region clusterizationdata
+        private List<List<double>> x;
+        public List<List<double>> X
+        {
+            get { return x; }
+            set { x = value; }
+        }
+        private List<List<double>> y;
+        public List<List<double>> Y
+        {
+            get { return y; }
+            set { y = value; }
+        }
+        private List<double> t;
+        public List<double> Time
+        {
+            get { return t; }
+            set { t = value; }
+        }
+        private List<double> z;
+        public List<double> Z
+        {
+            get { return z; }
+            set { z = value; }
+        }
+        #endregion clusterizationdata
+        #region interface
+        public virtual void Config(ClusterProcessorCfg cfg) { this.cfg = cfg; return; }
+        public virtual void Init() { return; }
+        public virtual void Activate() { return; }
+        public virtual void Exe() { return; }
+        public virtual void DeInit() { return; }
+        public virtual void DeActivate() { return; }
+        #endregion interface
+        public virtual void GetHistoryData(ref T histData) { return; }
+        public virtual void SupplyData(ref List<double> Z) { return; }
+    }
+    public class CProcessor<T, TRT> : CProcessorBase<T>
+        where T : CHistoryInput, new()
+        where TRT : CRTInput, new()
+    {
+        public CProcessor() { }
+        #region cfg
+        ClusterProcessorCfg cfg;
+        #endregion cfg
+        T histData;
+        CHistoryProcessor<T, TRT> hp;
+        CClusterRT<TRT> crt;
+        #region interface
+        public override void Config(ClusterProcessorCfg cfg)
+        {
+            base.Config(cfg);
+            hp = new CHistoryProcessor<T, TRT>();
+            crt = new CClusterRT<TRT>();
+
+            hp.Config(cfg);
+            crt.Config(cfg);
+            this.cfg = cfg;
+            histData = new T();
+        }
+        public override void Init()
+        {
+            base.Init();
+            hp.Init();
+            crt.Init();
+        }
+        public override void Activate()
+        {
+            base.Activate();
+            hp.Activate();
+            crt.Activate();
+        }
+        public override void Exe()
+        {
+            base.Exe();
+            hp.Exe();
+            crt.Exe();
+
+            hp.GetHistoryData(ref histData);
+            X = histData.X;
+            Y = histData.Y;
+            Time = histData.T;
+            Console.Write("X={0} \n Y= {1} \n Time = {2}", X, Y, Time);
+        }
+        #endregion interface
+        public override void GetHistoryData(ref T histData)
+        {
+            histData.X = X;
+            histData.Y = Y;
+            histData.T = Time;
+            return;
+        }
+        public override void SupplyData(ref List<double> Z) { Z = this.Z; return; }
     }
     [Serializable]
     public class CConfig
@@ -124,38 +392,32 @@ namespace ClusterProcessorClassLibrary
         
         #endregion ClusterProcessorCfg
     }
-    public class InputMapper : BaseMath
+    public class BaseMath
     {
-        public InputMapper() { }
-        public virtual bool Init() { return true; }
-        public virtual bool Config() { return true; }
-        public virtual bool Process()
+        public BaseMath() { }
+        public virtual double Sum(List<double> vec)
         {
-            return true;
+            double result = 0;
+
+            for (int i = 0; i < vec.Count; i++)
+            {
+                result += vec[i];
+            }
+            return result;
         }
-        private List<List<double>> x = new List<List<double>>();
-        public List<List<double>> X
+        public virtual double Average(List<double> vec)
         {
-            get { return x; }
-            set { x = value; }
+            double sum = Sum(vec);
+            double result = sum / vec.Count;
+            return result;
         }
-        private List<List<double>> y = new List<List<double>>();
-        public List<List<double>> Y
+        public virtual double StdDev(ref List<double> vec, double mean)
         {
-            get { return y; }
-            set { y = value; }
-        }
-        private List<double> t = new List<double>();
-        public List<double> T
-        {
-            get { return t; }
-            set { t = value; }
-        }
-        private ClusterCenter cc = new ClusterCenter();
-        public ClusterCenter CC
-        {
-            get { return cc; }
-            set { cc = value; }
+            List<double> vecCur = new List<double>(vec.Count);
+            for (int i = 0; i < vec.Count; i++) { vecCur.Add(Math.Pow((vec[i] - mean), 2)); }
+            double variances = Sum(vecCur) / (vec.Count - 1);
+            double result = Math.Sqrt(variances);
+            return result;
         }
     }
 }

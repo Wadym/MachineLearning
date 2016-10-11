@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 namespace ClusterProcessorClassLibrary
 {
     [Serializable]
-    class Clusterization<T> : Cluster where T : InputMapper, new()
+    class Clusterization<T> : Cluster<T> where T : CHistoryInput, new()
     {
         public Clusterization() { }
         ClusterProcessorCfg cfg = new ClusterProcessorCfg();
@@ -17,13 +17,13 @@ namespace ClusterProcessorClassLibrary
         public virtual void Config(ClusterProcessorCfg cfg){ this.cfg = cfg; }
         public override void Init() { }
         public override void Activate() { }
-        public override bool Process()
+        public override bool Exe(T inData)
         {
             bool result = true;
             int iModel;
 
-            T inData = new T();
-            inData.Process();
+            //T inData = new T();
+            //inData.Exe();
             List<List<double>> x = new List<List<double>>();
             List<List<double>> y = new List<List<double>>();
             List<double> t = new List<double>();
@@ -50,8 +50,10 @@ namespace ClusterProcessorClassLibrary
                 }
                 for (int ie = 0; ie < cfg.NumberOfClusters; ie++)
                 {
-                    List<double> entr = new List<double>(y[0].Count);
-                    for (int ii = 0; ii < y[0].Count; ii++)
+                    //List<double> entr = new List<double>(y[0].Count);
+                    //for (int ii = 0; ii < y[0].Count; ii++)
+                    List<double> entr = new List<double>(y.Count);
+                    for (int ii = 0; ii < y.Count; ii++)
                     {
                         entr.Add((double)0.0);
                     }
@@ -84,6 +86,7 @@ namespace ClusterProcessorClassLibrary
         public override void DeActivate() { }
         public override void DeInit() { }
         public virtual bool formingModel(int iModel, List<List<double>> x, List<List<double>> y, List<double> t, List<List<double>> xC, List<List<double>> yC, List<double> tC, int nc, double alpha, double beta)
+        //public virtual bool formingModel(int iModel, List<List<double>> x, List<List<double>> y, List<double> t, List<List<double>> xC, List<double> yC, List<double> tC, int nc, double alpha, double beta)
         {
             double t0 = t[t.Count - 1];
             List<double[]> collection = new List<double[]>();
@@ -284,35 +287,8 @@ namespace ClusterProcessorClassLibrary
             return true;
         }
     }
-    public class BaseMath
-    {
-        public BaseMath() { }
-        public virtual double Sum(List<double> vec)
-        {
-            double result = 0;
 
-            for (int i = 0; i < vec.Count; i++)
-            {
-                result += vec[i];
-            }
-            return result;
-        }
-        public virtual double Average(List<double> vec)
-        {
-            double sum = Sum(vec);
-            double result = sum / vec.Count;
-            return result;
-        }
-        public virtual double StdDev(ref List<double> vec, double mean)
-        {
-            List<double> vecCur = new List<double>(vec.Count);
-            for (int i = 0; i < vec.Count; i++) { vecCur.Add(Math.Pow((vec[i] - mean), 2)); }
-            double variances = Sum(vecCur) / (vec.Count - 1);
-            double result = Math.Sqrt(variances);
-            return result;
-        }
-    }
-    public class Cluster : BaseMath
+    public class Cluster<T> : BaseMath where T : CHistoryInput, new()
     {
         CConfig cfg = new CConfig();
         public Cluster() { }
@@ -334,7 +310,7 @@ namespace ClusterProcessorClassLibrary
         public virtual void Config(CConfig cfg) { this.cfg = cfg; }
         public virtual void Init() { }
         public virtual void Activate() { }
-        public virtual bool Process()
+        public virtual bool Exe(T inData)
         {
             bool result = true;
             return result;

@@ -45,5 +45,22 @@ namespace CreateXMLfromClass
             }
             this.SerializeData(cfg);
         }
+
+        private void btnRunClassScheleton_Click(object sender, EventArgs e)
+        {
+            CProcessor<CHistoryInput, CRTInput> cp = new CProcessor<CHistoryInput, CRTInput>();
+            ClusterProcessorCfg cfg = new ClusterProcessorCfg();
+            cp.Config(cfg);
+            cp.Init();
+            cp.Activate();
+            long count = 1;
+            long c = 0;
+            while (c < count) 
+            {
+                cp.Exe();
+            }
+            cp.DeActivate();
+            cp.DeInit();
+        }
     }
 }
