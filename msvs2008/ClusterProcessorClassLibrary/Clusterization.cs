@@ -4,17 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 
-namespace ClusterProcessorClassLibrary
+namespace UniversalClusterProcessorClassLibrary
 {
     [Serializable]
-    class Clusterization<T> : Cluster<T> where T : CHistoryInput, new()
+    class Clusterization<T> : Cluster<T> where T : CHistoryInputNode, new()
     {
         public Clusterization() { }
-        ClusterProcessorCfg cfg = new ClusterProcessorCfg();
+        CProcessorNodeCfg cfg = new CProcessorNodeCfg();
         private List<List<double>> nXc = new List<List<double>>();
         private List<List<double>> nYc = new List<List<double>>();
         ClusterCenter cc = new ClusterCenter();
-        public virtual void Config(ClusterProcessorCfg cfg){ this.cfg = cfg; }
+        public virtual void Config(CProcessorNodeCfg cfg) { this.cfg = cfg; }
         public override void Init() { }
         public override void Activate() { }
         public override bool Exe(T inData)
@@ -288,7 +288,7 @@ namespace ClusterProcessorClassLibrary
         }
     }
 
-    public class Cluster<T> : BaseMath where T : CHistoryInput, new()
+    public class Cluster<T> : BaseMath where T : CHistoryInputNode, new()
     {
         CConfig cfg = new CConfig();
         public Cluster() { }

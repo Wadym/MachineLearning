@@ -2,30 +2,30 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ClusterProcessorClassLibrary;
+using UniversalClusterProcessorClassLibrary;
 
-namespace CPE_ClusterProcessorClassLibrary
+namespace ClusterProcessorClassLibrary
 {
     [Serializable]
-    public class CPE_ClusterProcessorNodeCfg
+    public class CProcessorCfg
     {
-        public CPE_ClusterProcessorNodeCfg()
+        public CProcessorCfg()
         { 
         }
-        private List<ClusterProcessorCfg> cp_cfg=new List<ClusterProcessorCfg>();
-        public List<ClusterProcessorCfg> CPCfg
+        private List<CProcessorNodeCfg> nodes = new List<CProcessorNodeCfg>();
+        public List<CProcessorNodeCfg> Nodes
         {
-            get { return cp_cfg; }
-            set { cp_cfg = value; }
+            get { return nodes; }
+            set { nodes = value; }
         }
-        private List<int> inputs_array_index=new List<int>();
-        public List<int> InputsArrayIndex
+        private List<List<int>> inputs_array_index=new List<List<int>>();
+        public List<List<int>> InputsArrayIndex
         {
             get { return inputs_array_index; }
             set { inputs_array_index = value; }
         }
-        private List<int> outputs_array_index;
-        public List<int> OutputsArrayIndex
+        private List<List<int>> outputs_array_index;
+        public List<List<int>> OutputsArrayIndex
         {
             get { return outputs_array_index; }
             set { outputs_array_index = value; }
@@ -55,28 +55,27 @@ namespace CPE_ClusterProcessorClassLibrary
         //    set { do_clusterization_on_start = value; }
         //}
     }
-    public class CPE_ClusterProcessorNode
+    public class CProcessor
     {
-        CPE_ClusterProcessorNodeCfg cfg = new CPE_ClusterProcessorNodeCfg();
-        public CPE_ClusterProcessorNode()
+        CProcessorCfg cfg = new CProcessorCfg();
+        public CProcessor()
         {
         }
-        public CPE_ClusterProcessorNode(CPE_ClusterProcessorNodeCfg cfg)
+        public CProcessor(CProcessorCfg cfg)
         {
             this.cfg = cfg;
         }
-        private CProcessor<CHistoryInput, CRTInput> cluster_processor = new CProcessor<CHistoryInput, CRTInput>();
-        public CProcessor<CHistoryInput, CRTInput> Cluster_Processor
+        private CProcessor cluster_processor = new CProcessor();
+        public CProcessor Cluster_Processor
         {
             get { return cluster_processor; }
             set { cluster_processor = value; }
         }
-        private HistoryProcessor history_processor = new HistoryProcessor();
-        public HistoryProcessor Hystory_Processor
+        private List<CProcessorNode<CHistoryInputNode, CRTInputNode>> mdl = new List<CProcessorNode<CHistoryInputNode, CRTInputNode>>();
+        public List<CProcessorNode<CHistoryInputNode, CRTInputNode>> CProcessorNode
         {
-            get { return history_processor; }
-            set { history_processor = value; }
+            get { return mdl; }
+            set { mdl = value; }
         }
-
     }
 }

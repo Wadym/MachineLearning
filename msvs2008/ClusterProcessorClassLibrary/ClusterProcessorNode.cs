@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ClusterProcessorClassLibrary
+namespace UniversalClusterProcessorClassLibrary
 {
     [Serializable]
     public class ClusterCenter
@@ -28,11 +28,11 @@ namespace ClusterProcessorClassLibrary
         }
     }
     [Serializable]
-    public class ClusterProcessorCfg : CConfig
+    public class CProcessorNodeCfg : CConfig
     {
-        public ClusterProcessorCfg(){ }
+        public CProcessorNodeCfg() { }
     }
-    public class CClusterRT<TRT> where TRT : CRTInput, new()
+    public class CClusterRT<TRT> where TRT : CRTInputNode, new()
     {
         public CClusterRT() { }
         #region rtdata
@@ -56,7 +56,7 @@ namespace ClusterProcessorClassLibrary
         }
         #endregion rtdata
         #region interface
-        public virtual void Config(ClusterProcessorCfg cfg)
+        public virtual void Config(CProcessorNodeCfg cfg)
         {
             //input = new List<double>();
             //output = new List<double>();
@@ -81,9 +81,9 @@ namespace ClusterProcessorClassLibrary
         }
         #endregion interface
     }
-    public class CRTInput
+    public class CRTInputNode
     {
-        public CRTInput() { }
+        public CRTInputNode() { }
         public virtual void Config() { return; }
         #region rtdata
         private List<double> input;
@@ -107,9 +107,9 @@ namespace ClusterProcessorClassLibrary
         #endregion rtdata
     }
     [Serializable]
-    public class CHistoryInput
+    public class CHistoryInputNode
     {
-        public CHistoryInput() { }
+        public CHistoryInputNode() { }
         public void Config() { return; }
         #region clusterizationdata
         private List<List<double>> x = new List<List<double>>();
@@ -139,12 +139,12 @@ namespace ClusterProcessorClassLibrary
         #endregion clusterizationdata
     }
     public class CHistoryProcessor<T, TRT>
-        where T : CHistoryInput, new()
-        where TRT : CRTInput, new()
+        where T : CHistoryInputNode, new()
+        where TRT : CRTInputNode, new()
     {
         public CHistoryProcessor() { }
         #region cfg
-        ClusterProcessorCfg cfg;
+        CProcessorNodeCfg cfg;
         #endregion cfg
         #region clusterizationdata
         T hd;
@@ -156,7 +156,7 @@ namespace ClusterProcessorClassLibrary
         }
         #endregion clusterizationdata
         #region interface
-        public virtual void Config(ClusterProcessorCfg cfg)
+        public virtual void Config(CProcessorNodeCfg cfg)
         {
             //histData = new T();
             this.cfg = cfg;
@@ -189,11 +189,11 @@ namespace ClusterProcessorClassLibrary
             return;
         }
     }
-    public class CProcessorBase<T> where T : CHistoryInput, new()
+    public class CProcessorNodeBase<T> where T : CHistoryInputNode, new()
     {
-        public CProcessorBase() { }
+        public CProcessorNodeBase() { }
         #region cfg
-        ClusterProcessorCfg cfg;
+        CProcessorNodeCfg cfg;
         #endregion cfg
         #region rtdata
         private List<double> input;
@@ -242,7 +242,7 @@ namespace ClusterProcessorClassLibrary
         }
         #endregion clusterizationdata
         #region interface
-        public virtual void Config(ClusterProcessorCfg cfg) { this.cfg = cfg; return; }
+        public virtual void Config(CProcessorNodeCfg cfg) { this.cfg = cfg; return; }
         public virtual void Init() { return; }
         public virtual void Activate() { return; }
         public virtual void Exe() { return; }
@@ -252,19 +252,19 @@ namespace ClusterProcessorClassLibrary
         public virtual void GetHistoryData(ref T histData) { return; }
         public virtual void SupplyData(ref List<double> Z) { return; }
     }
-    public class CProcessor<T, TRT> : CProcessorBase<T>
-        where T : CHistoryInput, new()
-        where TRT : CRTInput, new()
+    public class CProcessorNode<T, TRT> : CProcessorNodeBase<T>
+        where T : CHistoryInputNode, new()
+        where TRT : CRTInputNode, new()
     {
-        public CProcessor() { }
+        public CProcessorNode() { }
         #region cfg
-        ClusterProcessorCfg cfg;
+        CProcessorNodeCfg cfg;
         #endregion cfg
         T histData;
         CHistoryProcessor<T, TRT> hp;
         CClusterRT<TRT> crt;
         #region interface
-        public override void Config(ClusterProcessorCfg cfg)
+        public override void Config(CProcessorNodeCfg cfg)
         {
             base.Config(cfg);
             hp = new CHistoryProcessor<T, TRT>();

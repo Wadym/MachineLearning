@@ -47,9 +47,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Clusterization.cs" />
-    <Compile Include="ClusterRT.cs" />
     <Compile Include="HistoryProcessor.cs" />
-    <Compile Include="ClusterProcessor.cs" />
+    <Compile Include="ClusterProcessorNode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

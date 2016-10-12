@@ -45,8 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CPE_ClusterProcessor.cs" />
-    <Compile Include="CPE_ClusterProcessorNode.cs" />
+    <Compile Include="ClusterProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
