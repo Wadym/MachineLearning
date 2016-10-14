@@ -10,11 +10,14 @@ namespace UniversalClusterProcessorClassLibrary
     class Clusterization<T> : Cluster<T> where T : CHistoryInputNode, new()
     {
         public Clusterization() { }
-        CProcessorNodeCfg cfg = new CProcessorNodeCfg();
+        CProcessorNodeCfg cfg;
         private List<List<double>> nXc = new List<List<double>>();
         private List<List<double>> nYc = new List<List<double>>();
         ClusterCenter cc = new ClusterCenter();
-        public virtual void Config(CProcessorNodeCfg cfg) { this.cfg = cfg; }
+        public virtual void Config(CProcessorNodeCfg cfg)
+        {
+            this.cfg = cfg;
+        }
         public override void Init() { }
         public override void Activate() { }
         public override bool Exe(T inData)
@@ -85,6 +88,10 @@ namespace UniversalClusterProcessorClassLibrary
         }
         public override void DeActivate() { }
         public override void DeInit() { }
+        public virtual ClusterCenter GetClusterCenters()
+        {
+            return this.cc;
+        }
         public virtual bool formingModel(int iModel, List<List<double>> x, List<List<double>> y, List<double> t, List<List<double>> xC, List<List<double>> yC, List<double> tC, int nc, double alpha, double beta)
         //public virtual bool formingModel(int iModel, List<List<double>> x, List<List<double>> y, List<double> t, List<List<double>> xC, List<double> yC, List<double> tC, int nc, double alpha, double beta)
         {

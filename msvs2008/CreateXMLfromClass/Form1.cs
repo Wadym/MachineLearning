@@ -40,11 +40,14 @@ namespace CreateXMLfromClass
                 cfg.Nodes.Add(new CProcessorNodeCfg());
                 for (int j = 0; j < 100; j++)
                 {
-                    cfg.Nodes[i].СlusterСenters[j].tC.Add(0);
-                    cfg.Nodes[i].cluster_center.xC.Add(new List<double>(0){0,0,0});
-                    cfg.Nodes[i].cluster_center.yC.Add(new List<double>(0){0});
+                    //cfg.Nodes[i].СlusterСenters = new CProcessorNodeCfg();
+                    //cfg.Nodes[i].CCfg.СlusterСenters = new ClusterCenter();
+                    cfg.Nodes[i].СlusterСenters.tC.Add(0);
+                    cfg.Nodes[i].СlusterСenters.xC.Add(new List<double>(0) { 0, 0, 0 });
+                    cfg.Nodes[i].СlusterСenters.yC.Add(new List<double>(0){0});
                 }
-                cfg.Nodes[i].CPCfg.Add(new CProcessorNodeCfg());
+                //cfg.Nodes[i].CPCfg.Add(new CProcessorNodeCfg());
+                cfg.Nodes.Add(new CProcessorNodeCfg());
             }
             this.SerializeData(cfg);
         }
@@ -58,9 +61,17 @@ namespace CreateXMLfromClass
             cp.Activate();
             long count = 1;
             long c = 0;
+            CRTInputNode realTimeData = new CRTInputNode();
+            //CHistoryInputNode historyData;
+            ClusterCenter clustercenters;
+            //ClusterCenter clusterCenters;
             while (c < count) 
             {
-                cp.Exe();
+                realTimeData.Input.Add(new Random().NextDouble()*1000);
+                realTimeData.Input.Add(new Random().NextDouble() * 1000);
+                realTimeData.Output.Add(new Random().NextDouble() * 20);
+                //cp.Exe(realTimeData, out historyData);
+                cp.Exe(realTimeData, out clustercenters);
             }
             cp.DeActivate();
             cp.DeInit();

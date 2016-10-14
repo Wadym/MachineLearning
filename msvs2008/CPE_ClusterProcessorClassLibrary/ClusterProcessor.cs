@@ -42,12 +42,13 @@ namespace ClusterProcessorClassLibrary
             get { return clusterization_update_interval; }
             set { clusterization_update_interval = value; }
         }
-        public ClusterCenter cluster_center = new ClusterCenter();
-        private ClusterCenter ClusterCenter
-        {
-            get { return cluster_center; }
-            set { cluster_center = value; }
-        }
+        //public ClusterCenter cluster_center = new ClusterCenter();
+        //private ClusterCenter ClusterCenter
+        //{
+        //    get { return cluster_center; }
+        //    set { cluster_center = value; }
+        //}
+
         //private bool do_clusterization_on_start = true;
         //public bool DoClusterizationOnStart
         //{
