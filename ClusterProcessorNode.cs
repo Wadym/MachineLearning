@@ -41,10 +41,10 @@ namespace UniversalClusterProcessorClassLibrary
         CProcessorNodeCfg cfg;
         #region rtdata
         Thread th;
-        Semaphore sem = new Semaphore(0, 10000);
+        public Semaphore sem = new Semaphore(0, 10000);
         bool deinit = false;
-        private Clusterization<T> _clusterization;
-        public Clusterization<T> Clusterization
+        private Clusterization<TRT, T> _clusterization;
+        public Clusterization<TRT, T> clusterizationobj
         {
             get { return _clusterization; }
             set { _clusterization = value; }
@@ -65,14 +65,8 @@ namespace UniversalClusterProcessorClassLibrary
         public T historyData
         {
             get { return history_data; }
-            set {}
+            set { history_data = value; }
         }
-        //private long record_number_for_clusterization;
-        //public long RecordNumberForClusterization
-        //{
-        //    get { return record_number_for_clusterization; }
-        //    set { record_number_for_clusterization = value; }
-        //}
         #endregion rtdata
         #region interface
         public virtual TRT GetRTData()
@@ -96,10 +90,11 @@ namespace UniversalClusterProcessorClassLibrary
         public virtual void Activate()
         {
         }
-        public virtual bool CalcRT(ref TRT realTimeData, ref ClusterCenter clustercenters, ref T historyData)
+        public virtual bool CalcRT(CProcessorNodeBase<T, TRT> context)
         {
             bool result=true;
             //TODO
+
             //TODO Output from CalcRT should be defined yet
             return result;
         }
@@ -110,29 +105,33 @@ namespace UniversalClusterProcessorClassLibrary
                 bool res = sem.WaitOne();
                 if (!this.deinit)
                 {
-                    Clusterization.Exe(historyData);
+                    historyData = hp.GetHistoryData();
+                    
+                    clusterizationobj.Exe(historyData);
+                    hp.historyData.CC = clusterizationobj.GetClusterCenters();
                 }
             }
             //Clusterization.Exe(historyData);
             return;
         }
-        public virtual bool Exe(ref TRT realTimeData, ref ClusterCenter clustercenters, ref Cluster<T> clusterization, ref T historyData)
+        //public virtual bool Exe(ref TRT realTimeData, ref ClusterCenter clustercenters, ref Clusterization<T> clusterizationobj, ref T historyData)
+        public virtual bool Exe(CProcessorNodeBase<T, TRT> context)
         {
             bool result=true;
-            result = (clustercenters.xC.Count()==clustercenters.tC.Count())&&(clustercenters.xC.Count()==clustercenters.yC.Count())?true:false;
-            int xclustercount=clustercenters.xC.Count();
-            int x0clustercount = clustercenters.xC[0].Count();
+            result = (context.historyData.CC.xC.Count() == context.historyData.CC.tC.Count()) && (context.historyData.CC.xC.Count() == context.historyData.CC.yC.Count()) ? true : false;
+            int xclustercount = context.historyData.CC.xC.Count();
+            int x0clustercount = context.historyData.CC.xC[0].Count();
             if((xclustercount>=1)&&(x0clustercount>=1))
             {
-                CalcRT(ref realTimeData, ref clustercenters, ref historyData);
+                //CalcRT(ref realTimeData, ref clustercenters, ref historyData); //context.historyData.CC.
+                result = CalcRT(context);
             }
             else
             {
-                if(     ((historyData.T.Count()>cfg.RequiredRecordsNumberForInitialClusterization) || (clustercenters.tC.Count>=1))
-                    &&  (historyData.T.Count()>cfg.RequiredRecordsNumberForClusterization))
+                if (((context.historyData.T.Count() > cfg.RequiredRecordsNumberForInitialClusterization) || (context.historyData.CC.tC.Count() >= 1))
+                    && (context.historyData.T.Count() > cfg.RequiredRecordsNumberForClusterization))
                 {
-                    //record_number_for_clusterization
-                    historyData = hp.GetHistoryData();
+                    context.historyData = context.hp.GetHistoryData();
                     sem.Release();
                     //Thread clusterizationThread = new Thread(new ThreadStart(ClusterizationTh));
                     //if (!clusterizationThread.IsAlive)
@@ -141,7 +140,6 @@ namespace UniversalClusterProcessorClassLibrary
                     //}
                 }
             }
-
             return result;
         }
         public virtual void DeActivate()
@@ -173,8 +171,8 @@ namespace UniversalClusterProcessorClassLibrary
             get { return output; }
             set { output = value; }
         }
-        private List<double> tm;
-        public List<double> Tm
+        private double tm;
+        public double Tm
         {
             get { return tm; }
             set { tm = value; }
@@ -234,6 +232,13 @@ namespace UniversalClusterProcessorClassLibrary
             get { return real_time_data; }
             set {}
         }
+
+        private Queue<TRT> qeueu;
+        public Queue<TRT> QeUeU
+        {
+            get { return qeueu; }
+            set { qeueu = value; }
+        }
         private List<double> z;
         public List<double> Z
         {
@@ -248,6 +253,7 @@ namespace UniversalClusterProcessorClassLibrary
             this.cfg = cfg;
             history_data = new T();
             history_data.CC = cfg.СlusterСenters;
+            qeueu = new Queue<TRT>();
         }
         public virtual void Init()
         {
@@ -255,17 +261,28 @@ namespace UniversalClusterProcessorClassLibrary
         public virtual void Activate()
         {
         }
-        public virtual void Exe()
+        public virtual bool Exe(CProcessorNodeBase<T, TRT> context)
         {
-            List<double> entry = new List<double>();
-            entry.Add(11);
-            history_data.X.Add(entry);
-            history_data.Y.Add(entry);
-            history_data.T.Add(11);
-            entry.Add(111);
-            history_data.X.Add(entry);
-            history_data.Y.Add(entry);
-            history_data.T.Add(111);
+            bool result = true;
+            this.real_time_data = context.realTimeData;
+            if (QeUeU.Count() >= cfg.MaxRecordsNumberForClusterization)
+            {
+                foreach( List<double> e in historyData.X) { e.Clear(); }
+                foreach (List<double> e in historyData.Y) { e.Clear(); }
+                historyData.T.Clear();
+                foreach (TRT e in QeUeU)
+                {
+                    historyData.X.Add(e.Input);
+                    historyData.Y.Add(e.Output);
+                    historyData.T.Add(e.Tm);
+                }
+                context.crt.historyData = historyData;
+
+                context.crt.sem.Release();
+            }
+            QeUeU.Enqueue(realTimeData);
+
+            return result;
         }
         public virtual void DeActivate()
         {
@@ -278,7 +295,7 @@ namespace UniversalClusterProcessorClassLibrary
         #endregion interface
         public virtual T GetHistoryData()
         {
-            return history_data;
+            return historyData;
         }
     }
     public class CProcessorNodeBase<T, TRT>
@@ -290,23 +307,11 @@ namespace UniversalClusterProcessorClassLibrary
         CProcessorNodeCfg cfg;
         #endregion cfg
         #region rtdata
-        private List<double> input;
-        public List<double> Input
+        private List<double> target;
+        public List<double> Target
         {
-            get { return input; }
-            set { input = value; }
-        }
-        private List<double> output;
-        public List<double> Output
-        {
-            get { return output; }
-            set { output = value; }
-        }
-        private List<double> tm;
-        public List<double> Tm
-        {
-            get { return tm; }
-            set { tm = value; }
+            get { return target; }
+            set { target = value; }
         }
         #endregion rtdata
         #region clusterizationdata
@@ -322,25 +327,22 @@ namespace UniversalClusterProcessorClassLibrary
             get { return real_time_data; }
             set { real_time_data = value; }
         }
-        //public ClusterCenter clusterCenters;
-        private List<double> z;
-        public List<double> Z
-        {
-            get { return z; }
-            set { z = value; }
-        }
+
         #endregion clusterizationdata
         #region interface
         public CHistoryProcessor<T, TRT> hp;
         public CClusterRT<TRT,T> crt;
-        public Clusterization<T> clusterization;
-        public virtual void Config(CProcessorNodeCfg cfg) {
+        public Clusterization<TRT, T> clusterizationobj;
+        public virtual void Config(CProcessorNodeCfg cfg)
+        {
             this.cfg = cfg;
-            
             crt = new CClusterRT<TRT,T>();
+            crt.Config(cfg);
             //histData = new T();
             hp = new CHistoryProcessor<T, TRT>();
-            clusterization = new Clusterization<T>();
+            hp.Config(cfg);
+            clusterizationobj = new Clusterization<TRT, T>();
+            clusterizationobj.Config(cfg);
             //clusterCenters = new ClusterCenter();
             return;
         }
@@ -350,8 +352,8 @@ namespace UniversalClusterProcessorClassLibrary
             real_time_data=crt.GetRTData();
             hp.Init();
             history_data = hp.GetHistoryData();
-            clusterization.Init();
-            crt.Clusterization = clusterization;
+            clusterizationobj.Init();
+            crt.clusterizationobj = clusterizationobj;
             crt.hp = hp;
             return;
         }
@@ -359,18 +361,23 @@ namespace UniversalClusterProcessorClassLibrary
         {
             hp.Activate();
             crt.Activate();
-            clusterization.Activate();
+            clusterizationobj.Activate();
             return;
         }
         //public virtual void Exe(TRT realTimeData, out T historyData)
         public virtual bool Exe(TRT realTimeData, out ClusterCenter clustercenters)
         {
             bool result = true;
+            
+            this.realTimeData = realTimeData;
+
             history_data = hp.GetHistoryData();
             clustercenters = history_data.CC;
-            this.crt.Exe(ref realTimeData, ref clustercenters, ref clusterization, ref this.historyData);
+            result = this.crt.Exe(this);//ref realTimeData, ref clustercenters, ref clusterizationobj, ref history_data);
             //TODO
-            clustercenters = this.GetClusterCenters();
+            hp.Exe(this);
+
+            clustercenters = crt.historyData.CC;// hp.GetHistoryData().CC;
             //historyData = this.GetHistoryData();
             return result;
         }
@@ -378,7 +385,7 @@ namespace UniversalClusterProcessorClassLibrary
         {
             bool result = true;
             //TODO
-            clustercenters = this.GetClusterCenters();
+            clustercenters = crt.historyData.CC;// this.GetClusterCenters();
             //historyData = this.GetHistoryData();
             return result;
         }
@@ -386,28 +393,24 @@ namespace UniversalClusterProcessorClassLibrary
         {
             hp.DeActivate();
             crt.DeActivate();
-            clusterization.DeActivate();
+            clusterizationobj.DeActivate();
             return;
         }
         public virtual void DeInit()
         {
             hp.DeInit();
             crt.DeInit();
-            clusterization.DeInit();
-            this.crt = null;
-            this.hp = null;
-            this.clusterization = null;
+            clusterizationobj.DeInit();
             return;
         }
         #endregion interface
         protected virtual T GetHistoryData()
         {
-            return this.histData;
+            return this.historyData;
         }
         protected virtual ClusterCenter GetClusterCenters()
         {
-            //return this.clusterCenters;
-            return this.histData.CC;
+            return this.historyData.CC;
         }
         public virtual void SupplyData(ref List<double> Z) { return; }
     }
@@ -416,69 +419,8 @@ namespace UniversalClusterProcessorClassLibrary
         where TRT : CRTInputNode, new()
     {
         public CProcessorNode():base() { }
-        #region cfg
-        CProcessorNodeCfg cfg;
-        #endregion cfg
         #region interface
-        public override void Config(CProcessorNodeCfg cfg)
-        {
-            this.cfg = cfg;
-            base.Config(cfg);
-            hp.Config(cfg);
-            crt.Config(cfg);
-            clusterization.Config(cfg);
-            //histData = new T();
-        }
-        public override void Init()
-        {
-            base.Init();
-            hp.Init();
-            crt.Init();
-            clusterization.Init();
-        }
-        public override void Activate()
-        {
-            base.Activate();
-            hp.Activate();
-            crt.Activate();
-            clusterization.Activate();
-        }
-        //public override void Exe(TRT realTimeData, out T historyData)
-        public override bool Exe(TRT realTimeData, out ClusterCenter clustercenters)
-        {
-            bool result = true;
-            //base.Exe(realTimeData, out historyData);
-            base.Exe(realTimeData, out clustercenters);
-            hp.Exe();
-            histData = hp.GetHistoryData();
-            crt.Exe(realTimeData, clustercenters, ref histData);
-
-            histData = hp.GetHistoryData();
-            this.histData = histData;
-            Console.Write("X={0}    \nY= {1}         \n    Time = {2}",
-                    this.histData.X,this.histData.Y, this.histData.T);
-            return result;
-        }
-        public override void DeActivate()
-        {
-            base.DeActivate();
-            hp.DeActivate();
-            crt.DeActivate();
-            clusterization.DeActivate();
-        }
-        public override void DeInit()
-        {
-            base.DeInit();
-            hp.DeInit();
-            crt.DeInit();
-            clusterization.DeInit();
-        }
         #endregion interface
-        protected override T GetHistoryData()
-        {
-            return this.historyData;
-        }
-        public override void SupplyData(ref List<double> Z) { Z = this.Z; return; }
     }
     [Serializable]
     public class CConfig
@@ -486,12 +428,6 @@ namespace UniversalClusterProcessorClassLibrary
         public CConfig() {}
         public virtual void Config() { }
         #region ClusterProcessorCfg
-        //private CConfig ccfg;// = new CConfig();
-        //public CConfig CCfg
-        //{
-        //    get { return ccfg; }
-        //    set { ccfg = value; }
-        //}
         private string funcid = "functionname";
         public string FuncID
         {

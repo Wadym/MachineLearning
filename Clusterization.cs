@@ -7,9 +7,11 @@ using System.Runtime.InteropServices;
 namespace UniversalClusterProcessorClassLibrary
 {
     [Serializable]
-    class Clusterization<T> : Cluster<T> where T : CHistoryInputNode, new()
+    public class Clusterization<TRT, T> : Cluster<TRT, T>
+        where TRT : CRTInputNode, new()
+        where T : CHistoryInputNode, new()
     {
-        public Clusterization() { }
+        public Clusterization():base() { }
         CProcessorNodeCfg cfg;
         private List<List<double>> nXc = new List<List<double>>();
         private List<List<double>> nYc = new List<List<double>>();
@@ -20,6 +22,37 @@ namespace UniversalClusterProcessorClassLibrary
         }
         public override void Init() { }
         public override void Activate() { }
+        public override bool Exe(TRT inRTData,T inData)
+        {
+            bool result = true;
+            int iModel=2;
+            List<List<double>> x = new List<List<double>>();
+            List<List<double>> y = new List<List<double>>();
+            List<double> t = new List<double>();
+            x.Add(inRTData.Input);
+            y.Add(inRTData.Output);
+            t.Add(inRTData.Tm);
+            cc = inData.CC;
+            if (!(result =(cc.tC.Count == cfg.NumberOfClusters))) return result;
+            List<List<double>> xC = new List<List<double>>(cfg.NumberOfClusters);
+            List<List<double>> yC = new List<List<double>>(cfg.NumberOfClusters);
+            List<double> tC = new List<double>(cfg.NumberOfClusters);
+            xC = cc.xC;
+            yC = cc.yC;
+            tC = cc.tC;
+//TODO
+            formingModel(iModel, x, y, t, xC, yC, tC, cfg.NumberOfClusters, cfg.Alpha, cfg.Beta);
+            cc.xC.Clear();
+            cc.yC.Clear();
+            cc.tC.Clear();
+            for (int i = 0; i < xC.Count; i++)
+            {
+                cc.xC.Add(xC[i]);
+                cc.yC.Add(yC[i]);
+                cc.tC.Add(tC[i]);
+            }
+            return result;
+        }
         public override bool Exe(T inData)
         {
             bool result = true;
@@ -36,7 +69,7 @@ namespace UniversalClusterProcessorClassLibrary
             cc = inData.CC;
             
             List<List<double>> xC = new List<List<double>>(cfg.NumberOfClusters);
-            List<List<double>> yC = new List<List<double>>(cfg.NumberOfClusters); 
+            List<List<double>> yC = new List<List<double>>(cfg.NumberOfClusters);
             List<double> tC = new List<double>(cfg.NumberOfClusters);
             
             if ((cc.tC.Count == 0) || (cc.xC.Count == 0) || (cc.yC.Count == 0))
@@ -295,7 +328,9 @@ namespace UniversalClusterProcessorClassLibrary
         }
     }
 
-    public class Cluster<T> : BaseMath where T : CHistoryInputNode, new()
+    public class Cluster<TRT, T> : BaseMath
+        where TRT : CRTInputNode, new()
+        where T : CHistoryInputNode, new()
     {
         CConfig cfg = new CConfig();
         public Cluster() { }
