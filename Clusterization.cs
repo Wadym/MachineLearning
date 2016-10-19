@@ -125,6 +125,56 @@ namespace UniversalClusterProcessorClassLibrary
         {
             return this.cc;
         }
+        public virtual bool formingModel(List<List<double>> x, List<List<double>> y, List<double> t, List<List<double>> xC, List<List<double>> yC, List<double> tC, int nc, double alpha, double beta,
+                                        ref List<List<double>> z, ref List<double> thetaT)
+        {
+            bool result = true;
+            double t0 = t[t.Count - 1];
+            int n = xC.Count;
+            int m = xC[0].Count;
+            List<List<double>> nXc = new List<List<double>>(n);
+            for (int ie = 0; ie < n; ie++)
+            {
+                List<double> entr = new List<double>(m);
+                for (int ii = 0; ii < m; ii++)
+                {
+                    entr.Add((double)0.0);
+                }
+                nXc.Add(entr);
+            }
+            List<double> mX = new List<double>(m); for (int ie = 0; ie < m; ie++) { mX.Add(0.0); }
+            List<double> sX = new List<double>(m); for (int ie = 0; ie < m; ie++) { sX.Add(0.0); }
+            norm(xC, ref nXc, ref mX, ref sX);
+            List<List<double>> nYc = new List<List<double>>(yC.Count);
+            for (int ie = 0; ie < yC.Count; ie++)
+            {
+                List<double> entr = new List<double>(yC[0].Count);
+                for (int ii = 0; ii < yC[0].Count; ii++)
+                {
+                    entr.Add((double)0.0);
+                }
+                nYc.Add(entr);
+            }
+            List<double> mY = new List<double>(yC[0].Count); for (int ie = 0; ie < yC[0].Count; ie++) { mY.Add(0.0); }
+            List<double> sY = new List<double>(yC[0].Count); for (int ie = 0; ie < yC[0].Count; ie++) { sY.Add(0.0); }
+            norm(yC, ref nYc, ref mY, ref sY);
+            //normT(xC, ref mX, ref sX, ref nXc);
+            try
+            {
+                prediction(nXc, t0, nX, nY, tConctd, alpha, beta, ref nYc, ref tC);
+                result= prediction(List<List<double>> xT, double theta0, List<List<double>> xL,
+                                                  List<List<double>> yL, List<double> tL, double alpha, double beta,
+                                              ref List<List<double>> z, ref List<double> thetaT)
+                denorm(nXc, mX, sX, ref xC);
+                denorm(nYc, mY, sY, ref yC);
+            }
+            catch (Exception ex)
+            {
+                //TODO log it
+                //System.Windows.Forms.MessageBox.Show(ex.Message);
+            }
+            return result;
+        }
         public virtual bool formingModel(int iModel, List<List<double>> x, List<List<double>> y, List<double> t, List<List<double>> xC, List<List<double>> yC, List<double> tC, int nc, double alpha, double beta)
         //public virtual bool formingModel(int iModel, List<List<double>> x, List<List<double>> y, List<double> t, List<List<double>> xC, List<double> yC, List<double> tC, int nc, double alpha, double beta)
         {
@@ -320,7 +370,6 @@ namespace UniversalClusterProcessorClassLibrary
                 catch (Exception ex)
                 {
                     //TODO log it
-                    //System.Console.WriteLine("Hey you! qu-qu, iModel {0}", iModel);
                     //System.Windows.Forms.MessageBox.Show(ex.Message);
                 }
             }
