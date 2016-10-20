@@ -145,6 +145,17 @@ namespace UniversalClusterProcessorClassLibrary
             List<double> mX = new List<double>(m); for (int ie = 0; ie < m; ie++) { mX.Add(0.0); }
             List<double> sX = new List<double>(m); for (int ie = 0; ie < m; ie++) { sX.Add(0.0); }
             norm(xC, ref nXc, ref mX, ref sX);
+            List<List<double>> nX = new List<List<double>>(x.Count);
+            for (int ie = 0; ie < x.Count; ie++)
+            {
+                List<double> entr = new List<double>(x[0].Count);
+                for (int ii = 0; ii < x[0].Count; ii++)
+                {
+                    entr.Add((double)0.0);
+                }
+                nX.Add(entr);
+            }
+            normT(x, ref mX, ref sX, ref nX);
             List<List<double>> nYc = new List<List<double>>(yC.Count);
             for (int ie = 0; ie < yC.Count; ie++)
             {
@@ -161,12 +172,25 @@ namespace UniversalClusterProcessorClassLibrary
             //normT(xC, ref mX, ref sX, ref nXc);
             try
             {
-                prediction(nXc, t0, nX, nY, tConctd, alpha, beta, ref nYc, ref tC);
-                result= prediction(List<List<double>> xT, double theta0, List<List<double>> xL,
-                                                  List<List<double>> yL, List<double> tL, double alpha, double beta,
-                                              ref List<List<double>> z, ref List<double> thetaT)
-                denorm(nXc, mX, sX, ref xC);
-                denorm(nYc, mY, sY, ref yC);
+                //prediction(nXc, t0, nX, nY, tConctd, alpha, beta, ref nYc, ref tC);
+                List<List<double>> nZ = new List<List<double>>(z.Count);
+                for (int ie = 0; ie < z.Count; ie++)
+                {
+                    List<double> entr = new List<double>(z[0].Count);
+                    for (int ii = 0; ii < z[0].Count; ii++)
+                    {
+                        entr.Add((double)0.0);
+                    }
+                    nZ.Add(entr);
+                }
+                result = prediction(nX, t0, nXc,
+                                    nYc, tC, alpha, beta,
+                                    ref nZ, ref thetaT);
+                //ref List<List<double>> z     List<double> thetaT
+                
+                //denorm(nXc, mX, sX, ref xC);
+                //denorm(nYc, mY, sY, ref yC);
+                denorm(nZ, mY, sY, ref z);
             }
             catch (Exception ex)
             {
@@ -402,6 +426,11 @@ namespace UniversalClusterProcessorClassLibrary
         public virtual void Init() { }
         public virtual void Activate() { }
         public virtual bool Exe(T inData)
+        {
+            bool result = true;
+            return result;
+        }
+        public virtual bool Exe(TRT inRTData, T inData)
         {
             bool result = true;
             return result;
