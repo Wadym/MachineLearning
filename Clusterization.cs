@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+//using System.Linq;
 using System.Text;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.Win32;
+using System.Threading;
 
-namespace UniversalClusterProcessorClassLibrary
+namespace ClusterProcessorClassLibrary
 {
     [Serializable]
     public class Clusterization<TRT, T> : Cluster<TRT, T>
@@ -12,13 +15,14 @@ namespace UniversalClusterProcessorClassLibrary
         where T : CHistoryInputNode, new()
     {
         public Clusterization():base() { }
-        CProcessorNodeCfg cfg;
         private List<List<double>> nXc = new List<List<double>>();
         private List<List<double>> nYc = new List<List<double>>();
-        ClusterCenter cc = new ClusterCenter();
-        public virtual void Config(CProcessorNodeCfg cfg)
+        public ClusterCenter cc = new ClusterCenter();
+        public override bool Config(CProcessorNodeCfg cfg, CClusterRT<TRT, T> crt, CHistoryProcessor<T, TRT> hp)//(CechaConfig cfg)//(CProcessorNodeCfg cfg)
         {
-            this.cfg = cfg;
+            bool result = false; ;
+            result=base.Config(cfg,crt,hp);
+            return result;
         }
         public override void Init() { }
         public override void Activate() { }
@@ -40,8 +44,7 @@ namespace UniversalClusterProcessorClassLibrary
             xC = cc.xC;
             yC = cc.yC;
             tC = cc.tC;
-//TODO
-            formingModel(iModel, x, y, t, xC, yC, tC, cfg.NumberOfClusters, cfg.Alpha, cfg.Beta);
+            if (!(result = formingModel(iModel, x, y, t, xC, yC, tC, cfg.NumberOfClusters, cfg.Alpha, cfg.Beta)))return result;
             cc.xC.Clear();
             cc.yC.Clear();
             cc.tC.Clear();
@@ -57,21 +60,17 @@ namespace UniversalClusterProcessorClassLibrary
         {
             bool result = true;
             int iModel;
-
-            //T inData = new T();
-            //inData.Exe();
             List<List<double>> x = new List<List<double>>();
             List<List<double>> y = new List<List<double>>();
             List<double> t = new List<double>();
             x = inData.X;
             y = inData.Y;
             t = inData.T;
+            if (0 == x.Count) return false;
             cc = inData.CC;
-            
             List<List<double>> xC = new List<List<double>>(cfg.NumberOfClusters);
             List<List<double>> yC = new List<List<double>>(cfg.NumberOfClusters);
             List<double> tC = new List<double>(cfg.NumberOfClusters);
-            
             if ((cc.tC.Count == 0) || (cc.xC.Count == 0) || (cc.yC.Count == 0))
             {
                 iModel = 1;
@@ -86,10 +85,8 @@ namespace UniversalClusterProcessorClassLibrary
                 }
                 for (int ie = 0; ie < cfg.NumberOfClusters; ie++)
                 {
-                    //List<double> entr = new List<double>(y[0].Count);
-                    //for (int ii = 0; ii < y[0].Count; ii++)
                     List<double> entr = new List<double>(y.Count);
-                    for (int ii = 0; ii < y.Count; ii++)
+                    for (int ii = 0; ii < y[0].Count; ii++)
                     {
                         entr.Add((double)0.0);
                     }
@@ -104,7 +101,7 @@ namespace UniversalClusterProcessorClassLibrary
                 yC = cc.yC;
                 tC = cc.tC;
             }
-            this.formingModel(iModel, x, y, t, xC, yC, tC, cfg.NumberOfClusters, cfg.Alpha, cfg.Beta);
+            if (!(result = this.formingModel(iModel, x, y, t, xC, yC, tC, cfg.NumberOfClusters, cfg.Alpha, cfg.Beta))) return result;
             cc.xC.Clear();
             cc.yC.Clear();
             cc.tC.Clear();
@@ -116,7 +113,10 @@ namespace UniversalClusterProcessorClassLibrary
             }
             
             //Generalist<ClusterCenter>.SaveAsXmlFormatClusterCenter(cc, this.FilenameClusterCenters);
-
+            this.crt.initialclusterization = false;
+            this.crt.hp.historyData.X.Clear();
+            this.crt.hp.historyData.Y.Clear();
+            this.crt.hp.historyData.T.Clear();
             return result;
         }
         public override void DeActivate() { }
@@ -128,7 +128,7 @@ namespace UniversalClusterProcessorClassLibrary
         public virtual bool formingModel(List<List<double>> x, List<List<double>> y, List<double> t, List<List<double>> xC, List<List<double>> yC, List<double> tC, int nc, double alpha, double beta,
                                         ref List<List<double>> z, ref List<double> thetaT)
         {
-            bool result = true;
+            bool result = false;
             double t0 = t[t.Count - 1];
             int n = xC.Count;
             int m = xC[0].Count;
@@ -144,7 +144,7 @@ namespace UniversalClusterProcessorClassLibrary
             }
             List<double> mX = new List<double>(m); for (int ie = 0; ie < m; ie++) { mX.Add(0.0); }
             List<double> sX = new List<double>(m); for (int ie = 0; ie < m; ie++) { sX.Add(0.0); }
-            norm(xC, ref nXc, ref mX, ref sX);
+            if(!(result = norm(xC, ref nXc, ref mX, ref sX)))return result;
             List<List<double>> nX = new List<List<double>>(x.Count);
             for (int ie = 0; ie < x.Count; ie++)
             {
@@ -155,7 +155,7 @@ namespace UniversalClusterProcessorClassLibrary
                 }
                 nX.Add(entr);
             }
-            normT(x, ref mX, ref sX, ref nX);
+            if(!(result = normT(x, ref mX, ref sX, ref nX)))return result;
             List<List<double>> nYc = new List<List<double>>(yC.Count);
             for (int ie = 0; ie < yC.Count; ie++)
             {
@@ -168,11 +168,10 @@ namespace UniversalClusterProcessorClassLibrary
             }
             List<double> mY = new List<double>(yC[0].Count); for (int ie = 0; ie < yC[0].Count; ie++) { mY.Add(0.0); }
             List<double> sY = new List<double>(yC[0].Count); for (int ie = 0; ie < yC[0].Count; ie++) { sY.Add(0.0); }
-            norm(yC, ref nYc, ref mY, ref sY);
+            if (!(result = norm(yC, ref nYc, ref mY, ref sY))) return result;
             //normT(xC, ref mX, ref sX, ref nXc);
             try
             {
-                //prediction(nXc, t0, nX, nY, tConctd, alpha, beta, ref nYc, ref tC);
                 List<List<double>> nZ = new List<List<double>>(z.Count);
                 for (int ie = 0; ie < z.Count; ie++)
                 {
@@ -183,14 +182,10 @@ namespace UniversalClusterProcessorClassLibrary
                     }
                     nZ.Add(entr);
                 }
-                result = prediction(nX, t0, nXc,
+                if(!(result = prediction(nX, t0, nXc,
                                     nYc, tC, alpha, beta,
-                                    ref nZ, ref thetaT);
-                //ref List<List<double>> z     List<double> thetaT
-                
-                //denorm(nXc, mX, sX, ref xC);
-                //denorm(nYc, mY, sY, ref yC);
-                denorm(nZ, mY, sY, ref z);
+                                    ref nZ, ref thetaT)))return result;
+                if(!(result = denorm(nZ, mY, sY, ref z)))return result;
             }
             catch (Exception ex)
             {
@@ -200,8 +195,8 @@ namespace UniversalClusterProcessorClassLibrary
             return result;
         }
         public virtual bool formingModel(int iModel, List<List<double>> x, List<List<double>> y, List<double> t, List<List<double>> xC, List<List<double>> yC, List<double> tC, int nc, double alpha, double beta)
-        //public virtual bool formingModel(int iModel, List<List<double>> x, List<List<double>> y, List<double> t, List<List<double>> xC, List<double> yC, List<double> tC, int nc, double alpha, double beta)
         {
+            bool result = false;
             double t0 = t[t.Count - 1];
             List<double[]> collection = new List<double[]>();
             List<double[]> clusters = new List<double[]>();
@@ -219,7 +214,7 @@ namespace UniversalClusterProcessorClassLibrary
                 }
                 List<double> mX = new List<double>(x[0].Count); for (int ie = 0; ie < x[0].Count; ie++) { mX.Add(0.0); }
                 List<double> sX = new List<double>(x[0].Count); for (int ie = 0; ie < x[0].Count; ie++) { sX.Add(0.0); }
-                norm(x, ref nX, ref mX, ref sX);
+                if (!(result = norm(x, ref nX, ref mX, ref sX)))return result;
                 List<List<double>> nY = new List<List<double>>(y.Count);
                 for (int ie = 0; ie < y.Count; ie++)
                 {
@@ -232,7 +227,7 @@ namespace UniversalClusterProcessorClassLibrary
                 }
                 List<double> mY = new List<double>(y[0].Count); for (int ie = 0; ie < y[0].Count; ie++) { mY.Add(0.0); }
                 List<double> sY = new List<double>(y[0].Count); for (int ie = 0; ie < y[0].Count; ie++) { sY.Add(0.0); }
-                norm(y, ref nY, ref mY, ref sY);
+                if (!(result = norm(y, ref nY, ref mY, ref sY)))return result;
                 long kAtt = 1;
                 while (kAtt < 100)
                 {
@@ -250,12 +245,13 @@ namespace UniversalClusterProcessorClassLibrary
                         };
                         double[] x1C = new double[xC[0].Count];
                         clusters.Clear();
-                        clustering(nc
+                        if (!(result = clustering(nc
                        , collection
                        , ref clusters
                         , 1
                         , cfg.DeltaErrMax
-                        , cfg.IterationMax);
+                        , cfg.IterationMax)))return result;
+                        nXc.Clear();
                         for (int ie = 0; ie < clusters.Count; ie++)
                         {
                             List<double> entr = new List<double>(clusters[0].GetLength(0));
@@ -277,9 +273,9 @@ namespace UniversalClusterProcessorClassLibrary
                             }
                             nYc.Add(entr);
                         }
-                        prediction(nXc, t0, nX, nY, t, alpha, beta, ref nYc, ref tC);
-                        denorm(nXc, mX, sX, ref xC);
-                        denorm(nYc, mY, sY, ref yC);
+                        if (!(result = prediction(nXc, t0, nX, nY, t, alpha, beta, ref nYc, ref tC)))return result;
+                        if (!(result = denorm(nXc, mX, sX, ref xC)))return result;
+                        if (!(result = denorm(nYc, mY, sY, ref yC)))return result;
                         kAtt = 100;
                     }
                     catch (Exception ex)
@@ -333,7 +329,7 @@ namespace UniversalClusterProcessorClassLibrary
                 }
                 List<double> mX = new List<double>(m); for (int ie = 0; ie < m; ie++) { mX.Add(0.0); }
                 List<double> sX = new List<double>(m); for (int ie = 0; ie < m; ie++) { sX.Add(0.0); }
-                norm(xConctd, ref nX, ref mX, ref sX);
+                if (!(result = norm(xConctd, ref nX, ref mX, ref sX)))return result;
                 List<List<double>> nY = new List<List<double>>(yConctd.Count);
                 for (int ie = 0; ie < yConctd.Count; ie++)
                 {
@@ -346,8 +342,8 @@ namespace UniversalClusterProcessorClassLibrary
                 }
                 List<double> mY = new List<double>(yConctd[0].Count); for (int ie = 0; ie < yConctd[0].Count; ie++) { mY.Add(0.0); }
                 List<double> sY = new List<double>(yConctd[0].Count); for (int ie = 0; ie < yConctd[0].Count; ie++) { sY.Add(0.0); }
-                norm(yConctd, ref nY, ref mY, ref sY);
-                normT(xC, ref mX, ref sX, ref nXc);
+                if (!(result = norm(yConctd, ref nY, ref mY, ref sY)))return result;
+                if (!(result = normT(xC, ref mX, ref sX, ref nXc)))return result;
                 try
                 {
                     collection.Clear();
@@ -370,14 +366,15 @@ namespace UniversalClusterProcessorClassLibrary
                         }
                         clusters.Add(cluster0);
                     }
-                    clustering(nc
+                    if (!(result = clustering(nc
                    , collection
                    , ref clusters
                     , 2
                     , cfg.DeltaErrMax
-                    , cfg.IterationMax);
+                    , cfg.IterationMax)))return result;
                     int d0 = nXc.Count;
                     int d1 = nY[0].Count;
+                    nYc.Clear();
                     for (int ie = 0; ie < d0; ie++)
                     {
                         List<double> entr = new List<double>(x[0].Count);
@@ -387,9 +384,9 @@ namespace UniversalClusterProcessorClassLibrary
                         }
                         nYc.Add(entr);
                     }
-                    prediction(nXc, t0, nX, nY, tConctd, alpha, beta, ref nYc, ref tC);
-                    denorm(nXc, mX, sX, ref xC);
-                    denorm(nYc, mY, sY, ref yC);
+                    if (!(result = prediction(nXc, t0, nX, nY, tConctd, alpha, beta, ref nYc, ref tC)))return result;
+                    if (!(result = denorm(nXc, mX, sX, ref xC)))return result;
+                    if (!(result = denorm(nYc, mY, sY, ref yC)))return result;
                 }
                 catch (Exception ex)
                 {
@@ -397,15 +394,21 @@ namespace UniversalClusterProcessorClassLibrary
                     //System.Windows.Forms.MessageBox.Show(ex.Message);
                 }
             }
-            return true;
+            return result;
         }
     }
+
+    public class MathLibAccess
+    {
+        [DllImport(@"win32prj.dll")]
+        public extern static bool SolveMatrixEqDir(double[] a, double[] b, int m, double[] xdll);
+    };
 
     public class Cluster<TRT, T> : BaseMath
         where TRT : CRTInputNode, new()
         where T : CHistoryInputNode, new()
     {
-        CConfig cfg = new CConfig();
+        public CProcessorNodeCfg cfg;
         public Cluster() { }
         private double[] x = null;
         public double[] X
@@ -419,10 +422,27 @@ namespace UniversalClusterProcessorClassLibrary
             get { return y; }
             set { y = value; }
         }
-        [DllImport("..\\..\\..\\..\\Debug\\win32prj.dll")]
-        private extern unsafe static bool SolveMatrixEqDir(double[] a, double[] b, int m, double[] xdll);
-        public virtual void Config() { }
-        public virtual void Config(CConfig cfg) { this.cfg = cfg; }
+        private CClusterRT<TRT,T> _crt;
+        public CClusterRT<TRT, T> crt
+        {
+            get { return _crt; }
+            set { _crt = value; }
+        }
+        private CHistoryProcessor<T, TRT> _hp;
+        public CHistoryProcessor<T, TRT> hp
+        {
+            get { return _hp; }
+            set { _hp = value; }
+        }
+        public virtual bool Config() { bool result = true; return result; }
+        public virtual bool Config(CProcessorNodeCfg cfg, CClusterRT<TRT,T> crt, CHistoryProcessor<T, TRT> hp)
+        {
+            bool result = true;
+            this.cfg = cfg;
+            this.hp=hp;
+            this.crt=crt;
+            return result;
+        }
         public virtual void Init() { }
         public virtual void Activate() { }
         public virtual bool Exe(T inData)
@@ -463,6 +483,7 @@ namespace UniversalClusterProcessorClassLibrary
         }
         public virtual bool normT(List<List<double>> x, ref List<double> mX, ref List<double> sX, ref List<List<double>> nX)
         {
+            if (x.Count == 0) return false;
             int n = x.Count;
             int m = x[0].Count;
             for (int ke = 0; ke < n; ke++) { for (int ki = 0; ki < m; ki++) { nX[ke][ki] = 0; } }
@@ -484,10 +505,13 @@ namespace UniversalClusterProcessorClassLibrary
         }
         public virtual bool norm(List<List<double>> x, ref List<List<double>> nX, ref List<double> mX, ref List<double> sX)
         {
-            for (int i1 = 0; i1 < nX[0].Count; i1++)
+            if (x.Count == 0) return false;
+            int n = x.Count;
+            int m = x[0].Count;
+            for (int i1 = 0; i1 < n; i1++)
             {
                 List<double> clmn = new List<double>(x.Count);
-                for (int i2 = 0; i2 < x.Count; i2++) { clmn.Add(x[i2][i1]); }
+                for (int i2 = 0; i2 < m; i2++) { clmn.Add(x[i1][i2]); }
                 double clmAvrg = Average(clmn);
                 mX[i1] = clmAvrg;
                 sX[i1] = StdDev(ref clmn, clmAvrg);
@@ -512,6 +536,8 @@ namespace UniversalClusterProcessorClassLibrary
                                                   List<List<double>> yL, List<double> tL, double alpha, double beta,
                                               ref List<List<double>> z, ref List<double> thetaT)
         {
+            bool succeeded = false;
+
             for (int i = 0; i < xT.Count; i++)
             {
                 int m = xT[0].Count;
@@ -522,10 +548,12 @@ namespace UniversalClusterProcessorClassLibrary
                 }
                 List<double> wDist = new List<double>(xL.Count);
                 for (int ie = 0; ie < xL.Count; ie++) { wDist.Add((double)0.0); }
-                weight(x0, xL, alpha, ref wDist);
+                if (!(succeeded = weight(x0, xL, alpha, ref wDist))) return succeeded;
                 List<double> wAge = new List<double>(tL.Count);
                 for (int ie = 0; ie < tL.Count; ie++) { wAge.Add((double)0.0); }
-                age(theta0, tL, beta, ref wAge);
+                {
+                    if (!(succeeded = age(theta0, tL, beta, ref wAge))) return succeeded;
+                }
                 List<double> w = new List<double>(wDist.Count);
                 for (int ie = 0; ie < wDist.Count; ie++) { w.Add((double)0.0); }
                 for (int i1 = 0; i1 < wDist.Count; i1++) { w[i1] = wDist[i1] * wAge[i1]; }
@@ -536,21 +564,22 @@ namespace UniversalClusterProcessorClassLibrary
                     List<double> yL1 = new List<double>(yL.Count);
                     for (int ie = 0; ie < yL.Count; ie++) { yL1.Add((double)0.0); }
                     for (int i1 = 0; i1 < yL.Count; i1++) { yL1[i1] = yL[i1][j]; }
-                    weightOLS(xL, yL1, w, ref a);
+                    if (!(succeeded = weightOLS(xL, yL1, w, ref a))) return succeeded;
                     double zz = 0;
-                    result(x0, a, ref zz);
+                    if (!(succeeded = result(x0, a, ref zz))) return succeeded;
                     z[i][j] = zz;
                 }
                 double sum_w = 0; foreach (double item in w) { sum_w += item; }
-                double sum_wTimestL = 0; for (int i2 = 0; i2 < w.Count; i2++) { sum_wTimestL += w[i2] * tL[i2]; }
+                double sum_wTimestL = 0; for (int i2 = 0; i2 < w.Count; i2++) { if (tL.Count == 0){return false;} sum_wTimestL += w[i2] * tL[i2]; }
                 thetaT[i] = sum_wTimestL / sum_w;
             }
-            return true;
+            return succeeded;
         }
         public virtual bool prediction(List<List<double>> xT, double theta0, List<List<double>> xL,
                                        List<List<double>> yL, List<double> tL, double alpha, double beta,
                                        ref List<List<double>> z)
         {
+            bool succeeded = false;
             for (int i = 0; i < xT.Count; i++)
             {
                 int m = xT[0].Count;
@@ -561,10 +590,12 @@ namespace UniversalClusterProcessorClassLibrary
                 }
                 List<double> wDist = new List<double>(xL.Count);
                 for (int ie = 0; ie < xL.Count; ie++) { wDist.Add((double)0.0); }
-                weight(x0, xL, alpha, ref wDist);
+                succeeded = weight(x0, xL, alpha, ref wDist);
+                if (!succeeded) return succeeded;
                 List<double> wAge = new List<double>(tL.Count);
                 for (int ie = 0; ie < tL.Count; ie++) { wAge.Add((double)0.0); }
-                age(theta0, tL, beta, ref wAge);
+                succeeded = age(theta0, tL, beta, ref wAge);
+                if (!succeeded) return succeeded;
                 List<double> w = new List<double>(wDist.Count);
                 for (int ie = 0; ie < wDist.Count; ie++) { w.Add((double)0.0); }
                 for (int i1 = 0; i1 < wDist.Count; i1++) { w[i1] = wDist[i1] * wAge[i1]; }
@@ -575,13 +606,14 @@ namespace UniversalClusterProcessorClassLibrary
                     List<double> yL1 = new List<double>(yL.Count);
                     for (int ie = 0; ie < yL.Count; ie++) { yL1.Add((double)0.0); }
                     for (int i1 = 0; i1 < yL.Count; i1++) { yL1[i1] = yL[i1][j]; }
-                    weightOLS(xL, yL1, w, ref a);
+                    succeeded = weightOLS(xL, yL1, w, ref a);
+                    if(!succeeded)return succeeded;
                     double zz = 0;
-                    result(x0, a, ref zz);
+                    succeeded = result(x0, a, ref zz);
                     z[i][j] = zz;
                 }
             }
-            return true;
+            return succeeded;
         }
         public virtual bool weight(List<double> x0, List<List<double>> x, double alpha, ref List<double> w)
         {
@@ -614,6 +646,7 @@ namespace UniversalClusterProcessorClassLibrary
         public virtual bool age(double theta0, List<double> tL, double beta, ref List<double> ww)
         {
             long n = tL.Count;
+            if (n == 0) return false;
             for (int i1 = 0; i1 < n; i1++)
             {
                 ww[i1] = Math.Exp(-(beta) * (theta0 - tL[i1]));
@@ -630,6 +663,7 @@ namespace UniversalClusterProcessorClassLibrary
         }
         public virtual bool weightOLS(List<List<double>> x, List<double> y, List<double> w, ref List<double> a)
         {
+            bool succeeded = true;
             int[] d = new int[2];
             d[0] = x.Count;
             d[1] = x[0].Count;
@@ -676,7 +710,7 @@ namespace UniversalClusterProcessorClassLibrary
                     }
                 }
             }
-            unsafe
+            //unsafe
             {
                 double[] xa = new double[m + 1];
                 double[] AA = new double[(m + 1) * (m + 1)];
@@ -698,12 +732,28 @@ namespace UniversalClusterProcessorClassLibrary
                 }
                 int dims = m + 1;
                 bool resultSolveMatrixEq = false;
-                resultSolveMatrixEq = SolveMatrixEqDir(AA, BB, dims, xa);
-                //Thread.Sleep(500);
-                // back
+                for (int i = 0; i < AA.GetLength(0); i++)
+                {
+                    if(System.Double.IsNaN(AA[i])){return succeeded = false;}
+                }
+                for (int i = 0; i < BB.GetLength(0); i++)
+                {
+                    if (System.Double.IsNaN(BB[i])) { return succeeded = false; }
+                }
+                if (!succeeded) return succeeded;
+                succeeded = resultSolveMatrixEq = MathLibAccess.SolveMatrixEqDir(AA, BB, dims, xa);
+                if (!succeeded) return succeeded;
+                for (int i = 0; i < xa.GetLength(0); i++)
+                {
+                    if (System.Double.IsNaN(xa[i]))
+                    {
+                        return succeeded = false;
+                    }
+                }
+                if (!succeeded) return succeeded;
                 for (int i = 0; i < dims; i++) { a[i] = xa[i]; }
             }
-            return true;
+            return succeeded;
         }
         public virtual bool result(List<double> x, List<double> a, ref double y)
         {
@@ -736,14 +786,11 @@ namespace UniversalClusterProcessorClassLibrary
             , int iterationMax)
         {
             bool ok = true;
-            // ******** initial position of the centers of the clusters
             if (initialClusters == 1)
             {
-                // --------- Random chose points for the initial cluster centers
                 Random rnd = new Random();
                 int[] num = new int[nC];
                 for (int k = 0; k < nC; k++)
-                    //num[k] = 0;
                     num[k] = k;
                 for (int k = 0; k < nC; k++)
                 {
@@ -769,14 +816,12 @@ namespace UniversalClusterProcessorClassLibrary
                     clusters.Add(cluster0);
                 }
             }
-            // ********* Iterations
             int iteration = 1;
             double deltaErr = 0.0;
             double err;
             double errOld = 0.0;
             while (deltaErr > deltaErrMax || iteration < 2 && ok == true)
             {
-                // --------- The distribution of points by clusters
                 int[] clusterNum = new int[collection.Count];
                 for (int j = 0; j < collection.Count; j++)
                 {
@@ -797,7 +842,6 @@ namespace UniversalClusterProcessorClassLibrary
                         }
                     }
                 }
-                // --------Estimation of coordinates of the new clusters centers
                 double[] capacity = new double[nC];
                 for (int k = 0; k < nC; k++)
                 {
@@ -833,7 +877,6 @@ namespace UniversalClusterProcessorClassLibrary
                             clusters[k][i] = clusters[k][i] / capacity[k];
                         }
                     }
-                    // ********* Estimation of sum distanses from the cluster centers
                     err = 0.0;
                     for (int j = 0; j < collection.Count; j++)
                     {
